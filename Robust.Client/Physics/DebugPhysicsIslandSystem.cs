@@ -8,9 +8,7 @@ using Robust.Shared.IoC;
 using Robust.Shared.Maths;
 using Robust.Shared.Physics;
 using Robust.Shared.Physics.Components;
-using Robust.Shared.Physics.Systems;
 using Robust.Shared.Timing;
-using TerraFX.Interop.DirectX;
 
 namespace Robust.Client.Physics
 {
@@ -47,7 +45,7 @@ namespace Robust.Client.Physics
          * This will draw above every body involved in a particular island solve.
          */
 
-        public readonly Queue<(TimeSpan Time, List<PhysicsComponent> Bodies)> IslandSolve = new();
+        public readonly Queue<(TimeSpan Time, List<Entity<PhysicsComponent>> Bodies)> IslandSolve = new();
         public const float SolveDuration = 0.1f;
 
         public override void Initialize()
@@ -128,15 +126,15 @@ namespace Robust.Client.Physics
 
             var viewport = _eyeManager.GetWorldViewport();
 
-            foreach (var solve in _islandSystem.IslandSolve)
+            foreach (var (time, bodies) in _islandSystem.IslandSolve)
             {
                 var ratio = (float) Math.Max(
-                    (solve.Time.TotalSeconds + DebugPhysicsIslandSystem.SolveDuration -
+                    (time.TotalSeconds + DebugPhysicsIslandSystem.SolveDuration -
                      _gameTiming.CurTime.TotalSeconds) / DebugPhysicsIslandSystem.SolveDuration, 0.0f);
 
                 if (ratio <= 0.0f) continue;
 
-                foreach (var body in solve.Bodies)
+                foreach (var body in bodies)
                 {
                     var worldAABB = _lookup.GetWorldAABB(body.Owner);
                     if (!viewport.Intersects(worldAABB)) continue;
